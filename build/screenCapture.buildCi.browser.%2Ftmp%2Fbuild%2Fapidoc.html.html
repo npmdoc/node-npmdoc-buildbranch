@@ -1,0 +1,206 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/nfroidure/buildbranch">buildbranch (v2.0.0)</a>
+</h1>
+<h4>Publish a folder to the given build branch (like gh-pages).</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.buildbranch">module buildbranch</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.buildbranch.buildbranch">
+            function <span class="apidocSignatureSpan"></span>buildbranch
+            <span class="apidocSignatureSpan">(options, callback)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.buildbranch.toString">
+            function <span class="apidocSignatureSpan">buildbranch.</span>toString
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.buildbranch" id="apidoc.module.buildbranch">module buildbranch</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.buildbranch.buildbranch" id="apidoc.element.buildbranch.buildbranch">
+        function <span class="apidocSignatureSpan"></span>buildbranch
+        <span class="apidocSignatureSpan">(options, callback)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function buildBranch(options, callback) {
+
+  let curBranch = 'master';
+  const execOptions = {};
+  let command = '';
+
+  // Checking options
+  options.folder = options.folder || 'www';
+  options.branch = options.branch || 'gh-pages';
+  options.remote = options.remote || 'origin';
+  options.ignore = options.ignore || [];
+  options.ignore.push('.git', 'node_modules', options.folder);
+  options.cname = options.cname || 'CNAME';
+  options.commit = (options.commit || 'Build $').replace('$', (new Date()).toISOString());
+  options.cwd = options.cwd || process.cwd();
+  options.noVerify = options.noVerify || false;
+  execOptions.cwd = options.cwd;
+
+  // Remember the current branch
+  command = 'git rev-parse --abbrev-ref HEAD';
+
+  exec(command, execOptions, (err, stdout) =&gt; {
+    if(err) {
+      callback(err); return;
+    }
+
+    curBranch = stdout.trim();
+
+    // Switch to ghpages branch
+    command = 'git branch -D ' + options.branch + ';' +
+      ' git checkout --orphan ' + options.branch + ';' +
+      ' git rm -r --cached .';
+
+    exec(command, execOptions, (err) =&gt; {
+      let ignore;
+
+      if(err) {
+        callback(err); return;
+      }
+
+      // delete all files except the untracked ones
+      ignore = options.ignore.slice(0);
+      fs.readdirSync(options.cwd).forEach((file) =&gt; {
+        if(-1 === ignore.indexOf(file)) {
+          rimraf.sync(path.join(options.cwd, file));
+        }
+      });
+      fs.readdirSync(path.join(options.cwd, options.folder))
+        .forEach((file) =&gt; {
+          fs.renameSync(path.join(options.cwd, options.folder, file),
+            path.join(options.cwd, file));
+        });
+      fs.rmdirSync(path.join(options.cwd, options.folder));
+
+      // Add the domain cname field
+      if(options.domain) {
+        fs.writeFileSync(path.join(options.cwd, options.cname), options.domain);
+      }
+
+      // Add a new ignore file
+      ignore.push('.gitignore');
+      fs.writeFileSync(path.join(options.cwd, '.gitignore'), ignore.join('\n'));
+
+      // Commit files
+      command = 'git add .;' +
+        ' git commit -m "' + options.commit.replace('"', '\\"') + '"' +
+        (options.noVerify ? ' --no-verify' : '');
+      exec(command, execOptions, (err) =&gt; {
+        if(err) {
+          callback(err); return;
+        }
+
+        // Pushing commit
+        command = 'git push -f ' + options.remote + ' ' + options.branch + ';' +
+                  ' git checkout ' + curBranch + ' ;' +
+                  ' git checkout .';
+
+        exec(command, execOptions, (err) =&gt; {
+          if(err) {
+            callback(err); return;
+          }
+
+          callback();
+
+        });
+      });
+    });
+  });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.buildbranch.toString" id="apidoc.element.buildbranch.toString">
+        function <span class="apidocSignatureSpan">buildbranch.</span>toString
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">toString = function () {
+    return text;
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
