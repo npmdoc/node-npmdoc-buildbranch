@@ -1,6 +1,6 @@
 # npmdoc-buildbranch
 
-#### api documentation for  [buildbranch (v2.0.0)](https://github.com/nfroidure/buildbranch)  [![npm package](https://img.shields.io/npm/v/npmdoc-buildbranch.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-buildbranch) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-buildbranch.svg)](https://travis-ci.org/npmdoc/node-npmdoc-buildbranch)
+#### basic api documentation for  [buildbranch (v2.0.0)](https://github.com/nfroidure/buildbranch)  [![npm package](https://img.shields.io/npm/v/npmdoc-buildbranch.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-buildbranch) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-buildbranch.svg)](https://travis-ci.org/npmdoc/node-npmdoc-buildbranch)
 
 #### Publish a folder to the given build branch (like gh-pages).
 
